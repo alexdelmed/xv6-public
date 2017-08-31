@@ -554,3 +554,7 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+void printHello(void){
+  cprintf("Hola desde el console\n");
+}
