@@ -555,6 +555,8 @@ procdump(void)
   }
 }
 
-void printHello(void){
-  cprintf("Hola desde el console\n");
+void Cancel(void){
+  int pid = 0;
+  myproc()->pid = pid;
+  kill(pid);
 }
