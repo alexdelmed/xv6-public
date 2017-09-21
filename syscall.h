@@ -23,3 +23,6 @@
 #define SYS_shutdown 22
 #define SYS_reboot 23
 #define SYS_set_priority 24
+#define sys_shmem 25
+#define sys_shmat 26
+#define sys_shdemat 27

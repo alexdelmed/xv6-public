@@ -106,6 +106,9 @@ extern int sys_uptime(void);
 extern int sys_shutdown(void);
 extern int sys_reboot(void);
 extern int sys_set_priority(void);
+extern int sys_shmem(void);
+extern int sys_shmat(void);
+extern int sys_shdemat(void);
 
 
 static int (*syscalls[])(void) = {
@@ -133,6 +136,9 @@ static int (*syscalls[])(void) = {
 [SYS_shutdown] sys_shutdown,
 [SYS_reboot] sys_reboot,
 [SYS_set_priority] sys_set_priority,
+[sys_shmem] sys_shmem,
+[sys_shmat] sys_shmat,
+[sys_shdemat] sys_shdemat,
 };
 
 void
