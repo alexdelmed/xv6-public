@@ -20,10 +20,10 @@ int main(int argc, char *argv[]){
 	if(mem[0] != 0)
 		printf(1,"%s\n",mem);
 	else
-		strcpy(mem,"Hi there");
-		printf(1, "value saved");
+		strcpy(mem,argv[1]);
+		printf(1,"value saved\n");
 	//Check after copying
-  }
+
   //deatach from the shared memory
   shdemat(shmid);
 	exit();

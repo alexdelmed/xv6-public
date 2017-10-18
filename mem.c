@@ -15,7 +15,7 @@ struct shmem{
 };
 
 struct shmem arrayMem[MAXELEM];
-extern struct proc* myproc(void);
+extern struct proc* myproc(void); //presentar la funcion, que es externa al codigo
 
 //hash
 uint hash(uint a,uint size)
@@ -30,7 +30,7 @@ uint hash(uint a,uint size)
 }
 
 
-int sys_shmem(void){   // para crear bloque de memoria
+int sys_shmem(void){
 	uint shmid;
 	int key;
 
@@ -44,7 +44,7 @@ int sys_shmem(void){   // para crear bloque de memoria
   	return shmid;
   }
 
-  if((arrayMem[shmid].mem = kalloc())==0) // crear neevo objeto... new. Regresa una pagina
+  if((arrayMem[shmid].mem = kalloc())==0)
   	return -1;
   //Clean the page
   memset(arrayMem[shmid].mem, 0, PGSIZE);
@@ -70,17 +70,20 @@ extern int mappages(pde_t *, void *, uint , uint , int );
 int sys_shmat(void){
 	int shmid;
 	uint addr;
-	struct proc *proc();
-
+	struct proc *proc = myproc();
 	if(argint(0, &shmid) < 0)
     return 0;
 
   if(arrayMem[shmid].mem){
   	//Mapp the memory to the process by growing the size of the proc
   	addr = PGROUNDUP(proc->sz);
-  	mappages(proc->pgdir, (char*)addr, PGSIZE, V2P(arrayMem[shmid].mem), PTE_W|PTE_U); // PTE LECT Y ESCR, PTE U de usuario
+		//crea registro, V2P valida que la direccion fisica de la pagina sea valida, PTE_W (permiso de escritura), PTE_U (permiso de ususario)
+  	mappages(proc->pgdir, (char*)addr, PGSIZE, V2P(arrayMem[shmid].mem), PTE_W|PTE_U);
+		//crecer para indicar que las direcciones sean validas
   	proc->sz += PGSIZE;
+		//activar bloque de memoria
   	switchuvm(proc);
+		//numero de procesos conectados al bloque de memoria
   	arrayMem[shmid].proc_count += 1;
   	return addr;
   }
@@ -91,9 +94,9 @@ int sys_shmat(void){
 extern pte_t * walkpgdir(pde_t *, const void *, int );
 int sys_shdemat(void){
   int shmid;
+	struct proc *proc = myproc();
 	uint addr;
 	pte_t *pte;
-	struct proc *proc();
 
 
 	if(argint(0, &shmid) < 0)

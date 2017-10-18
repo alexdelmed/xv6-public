@@ -26,8 +26,13 @@ int uptime(void);
 int shutdown(void);
 int reboot(void);
 int set_priority(int);
+int shmem(int);
 char * shmat(int);
 int shdemat(int);
+int getppid(void);
+int signal(int, sighandler_t);
+int killsignal(int, int);
+//int signal(int, void(*func)(void)); //funcion que recibe nada y regresa nada
 
 // ulib.c
 int stat(char*, struct stat*);

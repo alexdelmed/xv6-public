@@ -46,7 +46,5 @@ void *consumer(void *threadid){
     pthread_create(&ptconsumer, NULL, consumer, NULL;
     pthread_create(&ptconsumer, NULL, consumer, NULL;
 
-    printf("El valor del saldo es %d\n ", saldo);
-    /* Last thing that main() should do */
     pthread_exit(NULL);
  }

@@ -49,7 +49,10 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  uchar priority;              //priority
+  uchar priority;              // Priority
+  //int signals[4]               // Arreglo de 4 funciones -- si el cast en sysproc.c no funciona
+  //void (*signals[4])(void);   //Por si no sirve el tipo de dato sighandler_t
+  sighandler_t signals[4];     //Arreglo de señales
 };
 
 // Process memory is laid out contiguously, low addresses first:

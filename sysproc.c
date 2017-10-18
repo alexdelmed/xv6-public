@@ -102,10 +102,33 @@ sys_reboot(void){
   return 0;
 }
 
-int sys_set_priority(void){
+int
+sys_set_priority(void){
   int priority;
-  if(argint(0, &priority) < 0)
+  if(argint(0, &priority) < 0){
     return -1;
+  }
   myproc()->priority = priority;
   return 0;
+}
+
+int sys_getppid(void){
+  return myproc()->parent->pid;
+}
+
+int sys_signal(void){
+  int signum; //numero de la casilla en el arreglo
+  int function; //direccion de la funcion
+  if(argint(0,&signum) < 0) {
+    return -1;
+  }
+  if(argint(1,&function) < 0) {
+    return -1;
+  }
+  signum -= 1;
+  if(signum > 3 || signum < 0){ //Si no se encuentra en el array
+    return -1;
+  }
+    myproc()->signals[signum] = (sighandler_t)function;
+    return 1;
 }

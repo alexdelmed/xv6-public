@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "stdio.h"
 
 struct {
   struct spinlock lock;
@@ -13,6 +14,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
+
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
@@ -141,6 +143,10 @@ userinit(void)
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
   p->priority = 125;
+  p->signals[0] = NULL; //inicializa vector al arreglo de señales
+  p->signals[1] = NULL;
+  p->signals[2] = NULL;
+  p->signals[3] = NULL;
   // this assignment to p->state lets other cores
   // run this process. the acquire forces the above
   // writes to be visible, and the lock is also needed
@@ -211,6 +217,7 @@ fork(void)
 
   pid = np->pid;
   np->priority = 125;
+
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
@@ -333,46 +340,45 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-
     hp = ptable.proc;
     sp = ptable.proc;
 
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
-        sp = p;
       if(hp->state != RUNNABLE){
-          hp = p;
-      } else{
+        hp = p;
+      } else {
         if(hp->priority < p->priority){
           hp = p;
         }
       }
-      if(sp->state != RUNNABLE){
-          sp = p;
+      if(sp->state !=RUNNABLE){
+        sp = p;
       }
     }
-    if(hp->priority > sp->priority) {
+
+    if(hp->priority > sp->priority){
       p = hp;
-    }else{
+    } else {
       p = sp;
     }
 
+    // Switch to chosen process.  It is the process's job
+    // to release ptable.lock and then reacquire it
+    // before jumping back to us.
+    c->proc = p;
+    switchuvm(p);
+    p->state = RUNNING;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+    swtch(&(c->scheduler), p->context);
+    switchkvm();
 
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
+    // Process is done running for now.
+    // It should have changed its p->state before coming back.
+    c->proc = 0;
+    release(&ptable.lock);
 
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
-      release(&ptable.lock);
   }
 }
 
@@ -554,8 +560,40 @@ procdump(void)
   }
 }
 
-void Cancel(void){
-  int pid = 0;
-  myproc()->pid = pid;
-  kill(pid);
+void KillProcess(void)
+{
+  if(myproc() != 0){
+    kill(myproc()->pid);
+  }
+  else
+  {
+    cprintf("There are no processes running");
+    cprintf("\n");
+  }
+}
+
+int sys_killsignal(void) {
+ int pid;
+ int signum;
+ struct proc *p;
+ if(argint(0, &pid) < 0) return -1;
+ if(argint(1, &signum) < 0) return -1;
+ if(signum > 4 || signum < 1) return -1;
+ //Try to find the process with the matching pid.
+ for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+        if(p->pid == pid) break;
+
+   //If the pid is not found finish
+   if(p->pid != pid) return -1;
+
+   //Default option finish the process
+   signum -=1;
+   if((int)p->signals[signum] == -1) kill(p->pid);
+   //if((int)p->signals[signum] == NULL) kill(p->pid);
+ //Else execute the function
+ //Move the stack to the next position
+ p->tf->esp -= 4;
+ //Point to the function
+ p->tf->eip = (uint)p->signals[signum];
+ return 1;
 }
