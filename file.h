@@ -1,4 +1,4 @@
-struct file {
+  struct file {
   enum { FD_NONE, FD_PIPE, FD_INODE } type;
   int ref; // reference count
   char readable;
@@ -22,6 +22,7 @@ struct inode {
   short minor;
   short nlink;
   uint size;
+  char permissions[4];
   uint addrs[NDIRECT+1];
 };
 #define I_VALID 0x2
